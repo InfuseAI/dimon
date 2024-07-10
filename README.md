@@ -10,7 +10,7 @@ pip install dimon
 
 ## Prepare env file
 
-Create a file named `.env`, or copy from `.env.example`.
+Create a file named `.env`, or copy it from `.env.example`.
 This file should contain the default configuration values for dimon. Here is an example of what the `.env` file might look like:
 
 ```
