@@ -121,11 +121,15 @@ def evaluate(dataset, database_url, database_index, username, password, top_k=10
     data = [vars(p) for p in processes]
     df = pd.DataFrame(data)
     # TODO: specify output file name
-    df.to_csv("mrr_report.csv", index=False)
+    mrr_report_filename = 'mrr_report.csv'
+    df.to_csv(mrr_report_filename, index=False)
     vector_store.close()
 
     with open('count.json', 'w') as f:
         json.dump(counts, f)
+
+    console.print(f'Average MRR: {np.average(eval_results):.2f}', style="magenta")
+    console.print(f"MRR report has been saved to '{mrr_report_filename}'")
 
     # Return the average MRR across all queries as the final evaluation metric
     return np.average(eval_results)
@@ -137,11 +141,14 @@ def evaluate(dataset, database_url, database_index, username, password, top_k=10
 def diff(file_name, threshold):
     df = pd.read_csv(file_name)
     df = df[df['mrr'] < threshold ]
+    num = df.shape[0]
     df['Accept / Reject'] = ''
-    df.to_csv('to_confirmed_change.csv')
+    df.to_csv('to_confirm_change.csv')
+    console = Console()
+    console.print(f"Filtered out {num} records with MRR less than the threshold, saved to 'to_confirm_change.csv'")
 
 @cli.command()
-@click.option('--report', '-r', default='to_confirmed_change.csv')
+@click.option('--report', '-r', default='to_confirm_change.csv')
 @click.option('--dataset', '-d', default=os.getenv('DATASET_PATH', ''), type=click.Path(exists=True), help='Path to the dataset')
 def merge(dataset, report):
     r = pd.read_csv(report)
@@ -169,9 +176,7 @@ def merge(dataset, report):
             #time.sleep(0.01)
     
     console = Console()
-    text = Text(str(merged.shape[0]) + " accepted answers have been merged into golden answers")
-    text.stylize("bold magenta", 0, 6)
-    console.print(text)
+    console.print("Accepted answers have been merged into golden answers, saved to 'examples/merged_golden_dataset.csv'")
     d.to_csv('examples/merged_golden_dataset.csv', index=False)
 
 
@@ -200,7 +205,7 @@ def _create_process_table(console, processes: list) -> Table:
         mrr_color = "green" if process.mrr > 0.7 else "yellow" if process.mrr > 0.3 else "red"
         mrr_text = Text(f"{process.mrr:.1f}", style=mrr_color)
         table.add_row(
-            str(process.id),
+            str(process.query_id),
             process.question,
             process.expected,
             process.actual,
