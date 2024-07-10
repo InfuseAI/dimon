@@ -5,7 +5,7 @@ dimon is a command-line interface (CLI) tool for evaluating and managing golden 
 You can install dimon directly from PyPI:
 
 ```
-pip install dimon
+pip install dimon-cli
 ```
 
 ## Prepare env file
