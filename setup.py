@@ -1,8 +1,8 @@
 from setuptools import setup
 
 setup(
-    name='dimon',
-    version='0.1',
+    name='dimon-cli',
+    version='0.1.0',
     py_modules=['dimon'],
     description='dimensional monitoring cli',
     long_description=open('README.md').read(),
@@ -19,8 +19,7 @@ setup(
         'llama-index-embeddings-ollama',
         'rich',
     ],
-    entry_points='''
-        [console_scripts]
-        dimon=dimon:cli
-    ''',
+    entry_points={
+        'console_scripts': ['dimon = dimon.main:cli']
+    },
 )
