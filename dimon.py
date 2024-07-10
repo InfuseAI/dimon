@@ -3,6 +3,7 @@ import click
 import time
 import re
 import os
+import json
 import pandas as pd
 from dataclasses import dataclass
 
@@ -65,6 +66,9 @@ def evaluate(dataset, database_url, database_index, username, password, top_k=10
     )
     retriever = index.as_retriever(similarity_top_k=top_k)
 
+    # count
+    counts = {}
+
     with Live(console=console, screen=True, auto_refresh=False) as live:
         counter = 0  # Add a counter
         display_interval = console.size.height - 4  # Number of queries to process before updating the display
@@ -90,6 +94,11 @@ def evaluate(dataset, database_url, database_index, username, password, top_k=10
             if is_hit:
                 rank = retrieved_ids.index(expected_id) + 1
                 mrr = 1 / rank
+
+                for r in retrieved_ids[:3]:
+                    if not r in counts:
+                        counts[r] = 0
+                    counts[r] = counts[r] + 1
             else:
                 mrr = 0
             eval_results.append(mrr)
@@ -114,6 +123,9 @@ def evaluate(dataset, database_url, database_index, username, password, top_k=10
     # TODO: specify output file name
     df.to_csv("mrr_report.csv", index=False)
     vector_store.close()
+
+    with open('count.json', 'w') as f:
+        json.dump(counts, f)
 
     # Return the average MRR across all queries as the final evaluation metric
     return np.average(eval_results)
